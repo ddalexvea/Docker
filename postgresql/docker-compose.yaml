@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    labels:
+      com.datadoghq.ad.checks: '{
+                                      "postgres": {
+                                        "init_config": {},
+                                        "instances": [
+                                          {
+                                            "dbm": true,
+                                            "host": "%%host%%",
+                                            "username": "datadog",
+                                            "password": "datadog",
+                                            "ignore_databases": ["postgres"],
+                                            "collect_default_database":false,
+                                            "database_autodiscovery": {
+						                                      "enabled": true,
+                                                  "exclude": ["postgres"]
+			                  		                }
+                                          }
+                                        ]
+                                      }
+                                    }'
+  datadog:
+    image: gcr.io/datadoghq/agent:7	
+    links:
+     - postgres
+    environment:
+     - DD_API_KEY=${DD_API_KEY}
+     - DD_SITE=${DD_SITE} # determines datadog instance to send data to (e.g change to datadoghq.eu for EU1)
+    volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
+     - /proc/:/host/proc/:ro
+     - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
