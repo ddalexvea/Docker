@@ -31,6 +31,7 @@ services:
                                     }'
   datadog:
     image: gcr.io/datadoghq/agent:7	
+    container_name: postgres-ddagent
     links:
      - postgres
     environment:
